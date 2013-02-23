@@ -1,0 +1,34 @@
+#!/bin/sh
+#创建临时文件和标识
+FLAG=0
+TMPFILE=`mktemp /tmp/eth.XXXXXXXXX`
+#读取用户输入
+read -p "Interface: " ETHCARD
+#判定用户输入的网卡是否存在
+ALLECARD=`ifconfig -a|awk '/^[^[:space:]l]/{print $1}'`
+
+until echo $ALLECARD | grep "$ETHCARD" &> /dev/null;do
+    echo -e "\033[31mWrong Card name.\033[0m"
+    read -p "Interface: " ETHCARD
+done
+#网卡路径的变量，以后要多次应用
+ETHFILE=/etc/network/interface
+#判定用户输入的协议是否正确
+read -p "Boot Protocol: " MYBOOTPROTO
+until echo $MYBOOTPROTO | grep -E "dhcp|static" &> /dev/null;do
+    echo -e "\033[31mWrong BOOTPROTO.\033[0m"
+    read -p "Boot Protocol: " MYBOOTPROTO
+done
+#判定DHCP和static
+if [ "$MYBOOTPROTO" == "dhcp" ];then
+    sed -i "s/^BOOTPROTO=.*/BOOTPROTO=dhcp/g" $ETHFILE
+    if [ $? -eq 0 ];then
+	ifdown $ETHCARD && ifup $ETHCARD
+	[ $? -eq 0 ] && echo "Set $ETHCARD done."
+    fi
+elif [ "$MYBOOTPROTO" == "static" ];then
+    cat $ETHFILE > $TMPFILE
+    read -p "Ip Address: " MYIP
+    #判定IP的正确性
+    until [[ $MYIP =~ ^([1-9]|[1-9][0-9]|1[0-9]{1,2}
+

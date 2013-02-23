@@ -1,0 +1,14 @@
+#/bin/sh
+#
+# 文件描述符测试
+{
+    echo "jjjj" >&3
+}&
+exec 3 > jjje
+echo "wwww" >&3
+{
+    echo "elfl" >&3
+    exec 4 >ooo
+    echo "ldfk" >&4
+} &
+echo "qqqq" >&4
